@@ -1,5 +1,6 @@
 # Project exclude paths
-/corelib/.gradle/
-/corelib/build/
+.idea/
+.gradle/
+kotlin/build/
 
-/.idea/
+local.properties
