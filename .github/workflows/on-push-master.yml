@@ -1,4 +1,4 @@
-name: Release
+name: Check commit
 
 on:
   push:
@@ -7,8 +7,8 @@ on:
 
 jobs:
 
-  publish-artifacts:
-    name: Publish artifacts to packages
+  tests:
+    name: Test code
     runs-on: ubuntu-latest
     steps:
 
@@ -19,17 +19,12 @@ jobs:
         with:
           java-version: 1.8
 
-      - name: Set RELEASE_VERSION variable
-        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
-
-#      - name: Publish package
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#        # @doc https://github.com/eskatos/gradle-command-action
-#        uses: eskatos/gradle-command-action@v1
-#        with:
-#          arguments: test
-#          build-root-directory: kotlin
-#          wrapper-directory: kotlin
-#          # configuration-cache-enabled: true
-#          dependencies-cache-enabled: true
+      - name: Publish package
+        # @doc https://github.com/eskatos/gradle-command-action
+        uses: eskatos/gradle-command-action@v1
+        with:
+          arguments: test
+          build-root-directory: kotlin
+          wrapper-directory: kotlin
+          # configuration-cache-enabled: true
+          dependencies-cache-enabled: true
