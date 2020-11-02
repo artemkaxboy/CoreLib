@@ -1,0 +1,5 @@
+# Copy this file with "local.properties" name into current directory
+# Fill-in properties with valid values
+
+github.username=username
+github.token=token-to-publish-jar

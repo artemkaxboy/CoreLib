@@ -10,7 +10,7 @@ plugins {
 }
 
 group = "com.artemkaxboy.kotlin"
-version = "0.1-SNAPSHOT"
+version = System.getenv("RELEASE_VERSION") ?: "0.1-SNAPSHOT"
 
 val local = Properties().apply {
     rootProject.file("local.properties")
