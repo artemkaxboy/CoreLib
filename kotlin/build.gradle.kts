@@ -25,12 +25,22 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
-//     testImplementation(kotlin("test-junit5"))
+
+    // tests
+    testImplementation(kotlin("test-junit5"))
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.7.0")
+    // IDEA needs those:
+    testCompileOnly("org.junit.jupiter:junit-jupiter-api:5.7.0")
+    testCompileOnly("org.junit.jupiter:junit-jupiter-params:5.7.0")
 }
 
 
 tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "1.8"
+}
+
+tasks.withType<Test> {
+    useJUnitPlatform()
 }
 
 java {

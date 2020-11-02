@@ -20,9 +20,11 @@ object ExceptionUtils {
     private fun getDetailedMessage(throwable: Throwable): String {
         return when (throwable) {
 
+            /* message returns hostname only for UnknownHostException */
             is UnknownHostException ->
-                throwable.message?.prefixReason("Unknown host")
+                throwable.message?.prefixReason("Unknown host exception")
 
+            /* message returns null for UnknownHostException */
             is NullPointerException ->
                 "Null pointer exception"
 
