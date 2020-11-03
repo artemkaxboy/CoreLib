@@ -19,7 +19,7 @@ jobs:
         with:
           java-version: 1.8
 
-      - name: Publish package
+      - name: Run tests
         # @doc https://github.com/eskatos/gradle-command-action
         uses: eskatos/gradle-command-action@v1
         with:

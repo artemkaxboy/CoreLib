@@ -15,7 +15,6 @@ sealed class Result<out T : Any>(
 
     fun getOrNull() = value
 
-    @Suppress("unused") // public library function
     inline fun onSuccess(action: (value: T) -> Unit): Result<T> {
         if (isSuccess()) {
             action(requireNotNull(getOrNull()))
@@ -53,7 +52,6 @@ sealed class Result<out T : Any>(
 
     companion object {
 
-        @Suppress("unused") // public library function
         fun failure(message: String) = Failure(Exception(message))
 
         fun failure(exception: Exception, message: String? = null): Failure {
@@ -65,7 +63,6 @@ sealed class Result<out T : Any>(
 
         fun <R : Any> success(value: R) = Success(value)
 
-        @Suppress("unused") // public library function
         inline fun <R : Any> of(errorMessage: String? = null, block: () -> R?): Result<R> {
             return of({ errorMessage }, block)
         }
@@ -89,7 +86,6 @@ inline fun <T : Any> Result<T>.getOrElse(onFailure: (exception: Exception) -> T)
     }
 }
 
-@Suppress("unused") // public library function
 fun <T : Any, I : List<T>, R : Any> Result<I>.map(block: (T) -> R): Result<List<R>> {
 
     return getOrElse { return Result.failure(it) }
