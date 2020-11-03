@@ -31,5 +31,5 @@ jobs:
 
       - name: Upload coverage result
         env:
-          CODACY_API_BASE_URL: ${{ secrets.CODACY_PROJECT_TOKEN }}
+          CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
         run: bash <(curl -Ls https://coverage.codacy.com/get.sh) report
