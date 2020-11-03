@@ -7,6 +7,7 @@ plugins {
     // https://docs.gradle.org/current/samples/sample_building_kotlin_libraries.html
     `java-library`
     `maven-publish`
+    jacoco
 }
 
 group = "com.artemkaxboy.kotlin"
@@ -41,6 +42,16 @@ tasks.withType<KotlinCompile> {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+}
+
+// https://medium.com/@arunvelsriram/jacoco-configuration-using-gradles-kotlin-dsl-67a8870b1c68
+tasks.jacocoTestReport {
+    reports {
+        xml.isEnabled = true
+        csv.isEnabled = false
+        html.isEnabled = false
+        html.destination = file("$buildDir/reports/coverage")
+    }
 }
 
 java {
