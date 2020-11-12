@@ -141,13 +141,30 @@ internal class ResultTest {
     }
 
     @Test
-    fun `pass if equals work`() {
+    fun `pass if equals work for success`() {
         val success2 = Result.of { successValue }
         val success3 = Result.success(successValue)
+        val success4 = Result.success(successValue + 10)
 
         assertThat(success)
             .isEqualTo(success2)
             .isEqualTo(success3)
+            .isNotEqualTo(success4)
+    }
+
+    @Test
+    fun `pass if equals work for failure`() {
+        val exception = failure.exceptionOrNull()
+
+        assertThat(exception).isNotNull
+        assertThat(exception!!.message).isNotNull
+
+        val failure2 = Result.failure<String>(exception)
+        val failure3 = Result.failure<String>(exception.message!!)
+
+        assertThat(failure)
+            .isEqualTo(failure2)
+            .isNotEqualTo(failure3)
     }
 
     @Test
