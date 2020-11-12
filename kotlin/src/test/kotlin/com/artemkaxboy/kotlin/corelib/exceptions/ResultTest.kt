@@ -176,4 +176,14 @@ internal class ResultTest {
         assertThat(failure).asString().contains("Failure")
         assertThat(failure).asString().doesNotContain("Success")
     }
+
+    @Test
+    fun `pass if hashCode works`() {
+
+        assertThat(success.hashCode())
+            .isEqualTo(successValue.hashCode())
+
+        assertThat(failure.hashCode())
+            .isEqualTo(failure.exceptionOrNull().hashCode())
+    }
 }
