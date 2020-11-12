@@ -143,10 +143,18 @@ public inline fun <R, T : R> Result<T>.getOrElse(onFailure: (exception: Throwabl
     }
 }
 
-fun <T : Any, I : List<T>, R : Any> Result<I>.map(block: (T) -> R): Result<List<R>> {
+/**
+ * Returns the encapsulated result of the given [transform] function applied to the encapsulated value
+ * if this instance represents [success][Result.isSuccess] or the
+ * original encapsulated [Throwable] exception if it is [failure][Result.isFailure].
+ *
+ * Note, that this function rethrows any [Throwable] exception thrown by [transform] function.
+ * See [mapCatching] for an alternative that encapsulates exceptions.
+ */
+fun <T : Any, I : List<T>, R : Any> Result<I>.map(transform: (T) -> R): Result<List<R>> {
 
     return getOrElse { return Result.failure(it) }
-        .map(block)
+        .map(transform)
         .let(Result.Companion::success)
 }
 
