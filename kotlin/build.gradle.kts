@@ -27,6 +27,9 @@ repositories {
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
 
+    // org.assertj:assertj-core:3.6.2
+    testImplementation("org.assertj:assertj-core:3.18.0")
+
     // tests
     testImplementation(kotlin("test-junit5"))
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.7.0")

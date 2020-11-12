@@ -1,87 +1,144 @@
+@file:Suppress("UNCHECKED_CAST", "RedundantVisibilityModifier")
+
 package com.artemkaxboy.kotlin.corelib.exceptions
 
 import com.artemkaxboy.kotlin.corelib.exceptions.ExceptionUtils.getMessage
+import java.io.Serializable
 
 // @doc https://stackoverflow.com/a/59168658/1452052
 
 /**
+ * A discriminated union that encapsulates a successful outcome with a value of type [T]
+ * or a failure with an arbitrary [Throwable] exception.
+ *
  * @see [kotlin.Result]
  */
-sealed class Result<out T : Any>(
-    protected val value: T? = null,
-    protected val exception: Exception? = null
+class Result<out T>(
+    val value: Any?
 ) {
-    abstract fun isSuccess(): Boolean
 
-    fun getOrNull() = value
+    /**
+     * Returns `true` if this instance represents a successful outcome.
+     * In this case [isFailure] returns `false`.
+     */
+    val isSuccess: Boolean get() = !isFailure
 
-    inline fun onSuccess(action: (value: T) -> Unit): Result<T> {
-        if (isSuccess()) {
-            action(requireNotNull(getOrNull()))
+    /**
+     * Returns `true` if this instance represents a failed outcome.
+     * In this case [isSuccess] returns `false`.
+     */
+    val isFailure: Boolean get() = value is Failure
+
+    /**
+     * Returns the encapsulated value if this instance represents [success][Result.isSuccess] or `null`
+     * if it is [failure][Result.isFailure].
+     *
+     * This function is a shorthand for `getOrElse { null }` (see [getOrElse]).
+     */
+    fun getOrNull(): T? =
+        when {
+            isFailure -> null
+            else -> value as T
         }
-        return this
-    }
 
-    fun isFailure() = !isSuccess()
-    fun exceptionOrNull() = exception
-
-    inline fun onFailure(action: (exception: Exception) -> Unit): Result<T> {
-        if (isFailure()) {
-            action(requireNotNull(exceptionOrNull()))
+    /**
+     * Returns the encapsulated [Throwable] exception if this instance represents [failure][isFailure] or `null`
+     * if it is [success][isSuccess].
+     *
+     * This function is a shorthand for `fold(onSuccess = { null }, onFailure = { it })` (see [fold]).
+     */
+    fun exceptionOrNull(): Throwable? =
+        when (value) {
+            is Failure -> value.exception
+            else -> null
         }
-        return this
-    }
 
-    class Success<U : Any> internal constructor(data: U) : Result<U>(data) {
-
-        override fun isSuccess() = true
-
-        override fun toString(): String {
-            return "Success[$value]"
+    /**
+     * Returns a string `Success(v)` if this instance represents [success][Result.isSuccess]
+     * where `v` is a string representation of the value or a string `Failure(x)` if
+     * it is [failure][isFailure] where `x` is a string representation of the exception.
+     */
+    public override fun toString(): String =
+        when (value) {
+            is Failure -> value.toString() // "Failure($exception)"
+            else -> "Success($value)"
         }
-    }
 
-    class Failure internal constructor(exception: Exception) : Result<Nothing>(exception = exception) {
+    override fun equals(other: Any?): Boolean = other is Result<*> && value == other.value
+    override fun hashCode(): Int = value.hashCode()
 
-        override fun isSuccess() = false
+    /**
+     * Companion object for [Result] class that contains its constructor functions
+     * [success] and [failure].
+     */
+    public companion object {
+        /**
+         * Returns an instance that encapsulates the given [value] as successful value.
+         */
+        public fun <T> success(value: T): Result<T> =
+            Result(value)
 
-        override fun toString(): String {
-            return "Failure[$exception]"
-        }
-    }
+        /**
+         * Returns an instance that encapsulates [Throwable] exception with given [message] as failure.
+         *
+         * @param message exception will be wrapped in [Exception] with given message.
+         */
+        public fun <T> failure(message: String): Result<T> =
+            failure(Exception(message))
 
-    companion object {
-
-        fun failure(message: String) = Failure(Exception(message))
-
-        fun failure(exception: Exception, message: String? = null): Failure {
+        /**
+         * Returns an instance that encapsulates the given [Throwable] [exception] as failure.
+         *
+         * @param message exception will be wrapped in [Exception] with given message.
+         */
+        public fun <T> failure(exception: Throwable, message: String? = null): Result<T> {
             val extendedException = message
                 ?.let { Exception(exception.getMessage(message), exception) }
                 ?: exception
-            return Failure(extendedException)
+            return Result(Failure(extendedException))
         }
 
-        fun <R : Any> success(value: R) = Success(value)
-
-        inline fun <R : Any> of(errorMessage: String? = null, block: () -> R?): Result<R> {
+        /**
+         * Returns the result of [block] for the encapsulated value if this instance represents [success][Result.isSuccess]
+         * or the encapsulated [Throwable] exception with given [errorMessage] if it is [failure][Result.isFailure].
+         */
+        inline fun <R : Any> of(errorMessage: String? = null, block: () -> R): Result<R> {
             return of({ errorMessage }, block)
         }
 
-        inline fun <R : Any> of(errorMessage: () -> String?, block: () -> R?): Result<R> {
+        /**
+         * Returns the result of [block] for the encapsulated value if this instance represents [success][Result.isSuccess]
+         * or the encapsulated [Throwable] exception with given [errorMessage] if it is [failure][Result.isFailure].
+         */
+        inline fun <R : Any> of(errorMessage: () -> String?, block: () -> R): Result<R> {
             return try {
-                block()?.let { success(it) }
-                    ?: failure(Exception("Got null result"), errorMessage())
-            } catch (e: Exception) {
+                success(block())
+            } catch (e: Throwable) {
                 failure(e, errorMessage())
             }
         }
     }
+
+    internal class Failure(
+        @JvmField
+        val exception: Throwable
+    ) : Serializable {
+        override fun equals(other: Any?): Boolean =
+            other is Failure && exception == other.exception
+        override fun hashCode(): Int = exception.hashCode()
+        override fun toString(): String = "Failure($exception)"
+    }
 }
 
-inline fun <T : Any> Result<T>.getOrElse(onFailure: (exception: Exception) -> T): T {
-
+/**
+ * Returns the encapsulated value if this instance represents [success][Result.isSuccess] or the
+ * result of [onFailure] function for the encapsulated [Throwable] exception if it is [failure][Result.isFailure].
+ *
+ * Note, that this function rethrows any [Throwable] exception thrown by [onFailure] function.
+ */
+public inline fun <R, T : R> Result<T>.getOrElse(onFailure: (exception: Throwable) -> R): R {
     return when (val exception = exceptionOrNull()) {
-        null -> requireNotNull(getOrNull())
+        null -> value as T
         else -> onFailure(exception)
     }
 }
@@ -91,6 +148,24 @@ fun <T : Any, I : List<T>, R : Any> Result<I>.map(block: (T) -> R): Result<List<
     return getOrElse { return Result.failure(it) }
         .map(block)
         .let(Result.Companion::success)
+}
+
+/**
+ * Performs the given [action] on the encapsulated [Throwable] exception if this instance represents [failure][Result.isFailure].
+ * Returns the original `Result` unchanged.
+ */
+public inline fun <T> Result<T>.onFailure(action: (exception: Throwable) -> Unit): Result<T> {
+    exceptionOrNull()?.let { action(it) }
+    return this
+}
+
+/**
+ * Performs the given [action] on the encapsulated value if this instance represents [success][Result.isSuccess].
+ * Returns the original `Result` unchanged.
+ */
+public inline fun <T> Result<T>.onSuccess(action: (value: T) -> Unit): Result<T> {
+    if (isSuccess) action(value as T)
+    return this
 }
 
 /*

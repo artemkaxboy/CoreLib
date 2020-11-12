@@ -2,8 +2,20 @@ package com.artemkaxboy.kotlin.corelib.exceptions
 
 import java.net.UnknownHostException
 
+/**
+ * Helpers to make work with exception messages easier.
+ */
 object ExceptionUtils {
 
+    /**
+     * Returns never-null exception message.
+     *
+     * Adds message reason, for known exceptions which does not have their reason
+     * in messages, e.g. for UnknownHostException "hostname" becomes
+     * "Unknown host exception: hostname".
+     *
+     * For null message unknown exceptions returns their [Any.toString] result.
+     */
     fun Throwable.getMessage(prefix: String? = null): String {
         return getDetailedMessage(this).prefixReasonIfNeeded(prefix)
     }

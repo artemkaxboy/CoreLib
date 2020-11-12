@@ -1,87 +1,70 @@
 package com.artemkaxboy.kotlin.corelib.exceptions
 
 import com.artemkaxboy.kotlin.corelib.exceptions.ExceptionUtils.getMessage
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.Assertions.assertNull
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import kotlin.test.assertFalse
 
 internal class ResultTest {
+
+    private val successValue = 1
+    private val success = Result.success(successValue)
+
+    private val failure = Result.failure<Int>("Failure message")
 
     @Test
     fun `pass if isSuccess works`() {
 
-        Result.of { Unit }
-            .isSuccess()
-            .also { assertTrue(it) }
+        assertThat(success.isSuccess).isTrue
 
-        Result.of { null!! }
-            .isSuccess()
-            .also { assertFalse(it) }
+        assertThat(failure.isSuccess).isFalse
     }
 
     @Test
     fun `pass if getOrNull works`() {
 
-        Result.of { Unit }
-            .getOrNull()
-            .also { assertNotNull(it) }
+        assertThat(success.getOrNull())
+            .isNotNull
 
-        Result.of { null!! }
-            .getOrNull()
-            .also { assertNull(it) }
+        assertThat(failure.getOrNull())
+            .isNull()
     }
 
     @Test
     fun `pass if onSuccess works`() {
         var touched = false
 
-        Result.of { null!! }
-            .onSuccess { touched = true }
-        assertFalse(touched)
+        failure.onSuccess { touched = true }
+        assertThat(touched).isFalse
 
-        Result.of { Unit }
-            .onSuccess { touched = true }
-        assertTrue(touched)
+        success.onSuccess { touched = true }
+        assertThat(touched).isTrue
     }
 
     @Test
     fun `pass if isFailure works`() {
 
-        Result.of { Unit }
-            .isFailure()
-            .also { assertFalse(it) }
+        assertThat(success.isFailure).isFalse
 
-        Result.of { null!! }
-            .isFailure()
-            .also { assertTrue(it) }
+        assertThat(failure.isFailure).isTrue
     }
 
     @Test
     fun `pass if exceptionOrNull works`() {
 
-        Result.of { Unit }
-            .exceptionOrNull()
-            .also { assertNull(it) }
+        assertThat(success.exceptionOrNull()).isNull()
 
-        Result.of { null!! }
-            .exceptionOrNull()
-            .also { assertNotNull(it) }
+        assertThat(failure.exceptionOrNull()).isNotNull
     }
 
     @Test
     fun `pass if onFailure works`() {
         var touched = false
 
-        Result.of { Unit }
-            .onFailure { touched = true }
-        assertFalse(touched)
+        success.onFailure { touched = true }
+        assertThat(touched).isFalse
 
-        Result.of { null!! }
-            .onFailure { touched = true }
-        assertTrue(touched)
+        failure.onFailure { touched = true }
+        assertThat(touched).isTrue
     }
 
     @Test
@@ -89,75 +72,91 @@ internal class ResultTest {
         val expected = "My success result"
         val success = Result.success(expected)
 
-        assertTrue(success.isSuccess())
-        assertEquals(expected, success.getOrNull())
+        assertThat(success.isSuccess).isTrue
+        assertThat(success.getOrNull()).isEqualTo(expected)
     }
 
     @Test
     fun `pass if failure really failure`() {
         val expected = "My failure message"
-        val failure = Result.failure(expected)
+        val failure = Result.failure<Nothing>(expected)
 
-        assertTrue(failure.isFailure())
-        assertEquals(expected, failure.exceptionOrNull()?.getMessage())
+        assertThat(failure.isFailure).isTrue
+        assertThat(failure.exceptionOrNull()?.getMessage()).isNotNull.contains(expected)
     }
 
     @Test
     fun `pass if failure really failure with exception`() {
         val expectedMessage = "My failure message"
         val expectedExceptionMessage = "Exception message"
-        val failure = Result.failure(Exception(expectedExceptionMessage), expectedMessage)
+        val failure = Result.failure<Unit>(Exception(expectedExceptionMessage), expectedMessage)
 
-        assertTrue(failure.isFailure())
+        assertThat(failure.isFailure)
 
-        val actualException = failure.exceptionOrNull()
-        assertNotNull(actualException)
-
-        actualException!!.getMessage()
-            .also { assertTrue(it.contains(expectedMessage)) }
-            .also { assertTrue(it.contains(expectedExceptionMessage)) }
+        assertThat(failure.exceptionOrNull())
+            .isNotNull
+            .hasMessageContaining(expectedMessage)
+            .hasMessageContaining(expectedExceptionMessage)
     }
 
     @Test
     fun `pass if getOrElse works`() {
 
-        Result.of { 1 }
-            .getOrElse { 2 }
-            .also { assertEquals(1, it) }
+        val expectedFailValue = successValue + 10
 
-        Result.of { null!! }
-            .getOrElse { 2 }
-            .also { assertEquals(2, it) }
+        assertThat(success.getOrElse { expectedFailValue }).isEqualTo(successValue)
+        assertThat(failure.getOrElse { expectedFailValue }).isEqualTo(expectedFailValue)
     }
 
     @Test
     fun `pass if map works`() {
-        val initial = listOf(1, 2)
+        val initial = listOf(1, 2, 3, 4)
         val mapper = { i: Int -> i * i }
         val expected = initial.map(mapper)
 
-        Result.success(listOf(1, 2))
+        val result = Result.success(initial)
             .map(mapper)
             .getOrNull()
-            .also { assertEquals(expected, it) }
-    }
 
-    @Test
-    fun `pass if cannot return null result`() {
-
-        Result.of { null }
-            .exceptionOrNull()
-            .also { assertNotNull(it) }
-            .also { assertTrue(it!!.getMessage().contains("null")) }
+        assertThat(result).isEqualTo(expected)
     }
 
     @Test
     fun `pass if returns passed message on failed`() {
         val expectedMessage = "My fail message"
 
-        Result.of(expectedMessage) { null }
+        val failure1 = Result.of(expectedMessage) { null!! }
             .exceptionOrNull()
-            .also { assertNotNull(it) }
-            .also { assertTrue(it!!.getMessage().contains(expectedMessage)) }
+
+        assertThat(failure1)
+            .isNotNull
+            .hasMessageContaining(expectedMessage)
+
+        val failure2 = Result.of({ expectedMessage }) { null!! }
+            .exceptionOrNull()
+
+        assertThat(failure2)
+            .isNotNull
+            .hasMessageContaining(expectedMessage)
+    }
+
+    @Test
+    fun `pass if equals work`() {
+        val success2 = Result.of { successValue }
+        val success3 = Result.success(successValue)
+
+        assertThat(success)
+            .isEqualTo(success2)
+            .isEqualTo(success3)
+    }
+
+    @Test
+    fun `toString works`() {
+
+        assertThat(success).asString().contains("Success")
+        assertThat(success).asString().doesNotContain("Failure")
+
+        assertThat(failure).asString().contains("Failure")
+        assertThat(failure).asString().doesNotContain("Success")
     }
 }
