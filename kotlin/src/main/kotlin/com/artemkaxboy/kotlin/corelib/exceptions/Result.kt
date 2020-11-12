@@ -98,10 +98,18 @@ class Result<out T>(
             return Result(Failure(extendedException))
         }
 
+        /**
+         * Returns the result of [block] for the encapsulated value if this instance represents [success][Result.isSuccess]
+         * or the encapsulated [Throwable] exception with given [errorMessage] if it is [failure][Result.isFailure].
+         */
         inline fun <R : Any> of(errorMessage: String? = null, block: () -> R): Result<R> {
             return of({ errorMessage }, block)
         }
 
+        /**
+         * Returns the result of [block] for the encapsulated value if this instance represents [success][Result.isSuccess]
+         * or the encapsulated [Throwable] exception with given [errorMessage] if it is [failure][Result.isFailure].
+         */
         inline fun <R : Any> of(errorMessage: () -> String?, block: () -> R): Result<R> {
             return try {
                 success(block())
