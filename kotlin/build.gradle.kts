@@ -1,3 +1,5 @@
+@file:Suppress("SpellCheckingInspection")
+
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jetbrains.kotlin.konan.properties.Properties
 
@@ -6,8 +8,10 @@ plugins {
 
     // https://docs.gradle.org/current/samples/sample_building_kotlin_libraries.html
     `java-library`
-    `maven-publish`
+    maven
     jacoco
+
+    id("org.jlleitschuh.gradle.ktlint") version "9.4.1"
 }
 
 group = "com.artemkaxboy.kotlin"
@@ -38,7 +42,6 @@ dependencies {
     testCompileOnly("org.junit.jupiter:junit-jupiter-params:5.7.0")
 }
 
-
 tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "1.8"
 }
@@ -49,6 +52,8 @@ tasks.withType<Test> {
 
 // https://medium.com/@arunvelsriram/jacoco-configuration-using-gradles-kotlin-dsl-67a8870b1c68
 tasks.jacocoTestReport {
+    dependsOn("test")
+
     reports {
         xml.isEnabled = true
         csv.isEnabled = false
@@ -59,28 +64,4 @@ tasks.jacocoTestReport {
 
 java {
     withSourcesJar()
-}
-
-publishing {
-
-    // https://docs.github.com/en/free-pro-team@latest/actions/guides/publishing-java-packages-with-gradle
-    repositories {
-        maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/artemkaxboy/CoreLib")
-            credentials {
-
-                username = local.getProperty("github.username") ?: System.getenv("GITHUB_ACTOR")
-
-                password = local.getProperty("github.token") ?: System.getenv("GITHUB_TOKEN")
-            }
-        }
-    }
-
-    // https://docs.gradle.org/current/userguide/publishing_maven.html
-    publications {
-        create<MavenPublication>("maven") {
-            from(components["java"])
-        }
-    }
 }
