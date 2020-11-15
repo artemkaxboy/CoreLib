@@ -22,8 +22,7 @@ val local = Properties().apply {
 }
 
 group = "com.github.artemkaxboy"
-version = local.getProperty("application.version") ?:
-    System.getenv("RELEASE_VERSION") ?: "local"
+version = local.getProperty("application.version") ?: System.getenv("RELEASE_VERSION") ?: "local"
 
 repositories {
     mavenCentral()
