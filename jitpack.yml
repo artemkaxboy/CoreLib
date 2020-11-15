@@ -1,0 +1,13 @@
+jdk:
+  - openjdk8
+
+#before_install:
+#  - ./custom_setup.sh
+
+install:
+#  - echo "Running a custom install command"
+  - export
+  - kotlin/gradlew -p kotlin publishToMavenLocal
+
+#env:
+#  MYVAR: "custom environment variable"
