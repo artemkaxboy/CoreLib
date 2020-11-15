@@ -1,4 +1,4 @@
-package com.artemkaxboy.kotlin.corelib.exceptions
+package com.github.artemkaxboy.corelib.exceptions
 
 import java.net.UnknownHostException
 

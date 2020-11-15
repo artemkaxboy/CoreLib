@@ -1,1 +1,1 @@
-rootProject.name = "corelib"
+rootProject.name = "CoreLib"

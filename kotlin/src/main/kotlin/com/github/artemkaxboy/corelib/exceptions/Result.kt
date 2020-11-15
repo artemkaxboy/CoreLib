@@ -1,8 +1,8 @@
 @file:Suppress("UNCHECKED_CAST", "RedundantVisibilityModifier")
 
-package com.artemkaxboy.kotlin.corelib.exceptions
+package com.github.artemkaxboy.corelib.exceptions
 
-import com.artemkaxboy.kotlin.corelib.exceptions.ExceptionUtils.getMessage
+import com.github.artemkaxboy.corelib.exceptions.ExceptionUtils.getMessage
 import java.io.Serializable
 
 // @doc https://stackoverflow.com/a/59168658/1452052
