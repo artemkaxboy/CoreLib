@@ -21,8 +21,8 @@ val local = Properties().apply {
         ?.use { this.load(it) }
 }
 
-group = "com.artemkaxboy.kotlin"
-version = local.getProperty("github.username") ?:
+group = "com.github.artemkaxboy"
+version = local.getProperty("application.version") ?:
     System.getenv("RELEASE_VERSION") ?: "local"
 
 repositories {
@@ -74,10 +74,9 @@ publishing {
         maven {
             name = "GitHubPackages"
             url = uri("https://maven.pkg.github.com/artemkaxboy/CoreLib")
+
             credentials {
-
                 username = local.getProperty("github.username") ?: System.getenv("GITHUB_ACTOR")
-
                 password = local.getProperty("github.token") ?: System.getenv("GITHUB_TOKEN")
             }
         }

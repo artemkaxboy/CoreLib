@@ -1,6 +1,6 @@
-package com.artemkaxboy.kotlin.corelib.exceptions
+package com.github.artemkaxboy.corelib.exceptions
 
-import com.artemkaxboy.kotlin.corelib.exceptions.ExceptionUtils.getMessage
+import com.github.artemkaxboy.corelib.exceptions.ExceptionUtils.getMessage
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import java.net.HttpURLConnection
